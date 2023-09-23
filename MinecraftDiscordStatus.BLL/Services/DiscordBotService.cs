@@ -46,9 +46,11 @@ namespace MinecraftDiscordStatus.BLL.Services
             var _periodicTimer = 
                 new PeriodicTimer(TimeSpan.FromSeconds(_configurationConfig.RefreshTimeSeconds));
 
+            string lastChannelName = string.Empty;
+
             while (await _periodicTimer.WaitForNextTickAsync())
             {
-                await _periodicTaskService.UpdatePlayerCount(_discordClient);
+                lastChannelName = await _periodicTaskService.UpdatePlayerCount(_discordClient, lastChannelName);
             }
 
             // await Task.Delay(-1);

@@ -16,26 +16,41 @@ namespace MinecraftDiscordStatus.BLL.Services
             _configurationConfig = configurationConfig?.Value;
         }
 
-        public async Task UpdatePlayerCount(DiscordClient discordClient)
+        public async Task<string> UpdatePlayerCount(DiscordClient discordClient, string lastChannelName)
         {
+            Log.Debug($"UpdatePlayerCount | lastChannelName: {lastChannelName}");
+
             try
             {
                 string channelName = _configurationConfig.ChannelNameTemplate;
-
-                DiscordChannel channel =
-                    await discordClient.GetChannelAsync(_configurationConfig.ChannelId);
-
                 string onlinePlayers = GetMinecraftOnlinePlayers();
 
                 channelName = string.Format(channelName, onlinePlayers);
 
+                Log.Debug($"lastChannelName: {lastChannelName} | channelName: {channelName} | Equals: {channelName.Equals(lastChannelName)}");
+
+                // Avoid setting the channel name again if it is not necessary (to avoid being rate limited)
+                if (!string.IsNullOrEmpty(lastChannelName) && channelName.Equals(lastChannelName))
+                {
+                    return lastChannelName;
+                }
+
+                DiscordChannel channel =
+                        await discordClient.GetChannelAsync(_configurationConfig.ChannelId);
+
+                Log.Debug($"Trying to update the channel name to '{channelName}'");
+
                 await channel.ModifyAsync(prop => prop.Name = channelName);
+
+                return channelName;
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Exception occured while trying to update the player count.");
-                
-                await TrySetChannelNameSafely(discordClient);
+
+                string channelName = await TrySetChannelNameSafely(discordClient);
+
+                return channelName;
             }
         }
 
@@ -54,16 +69,16 @@ namespace MinecraftDiscordStatus.BLL.Services
             return $"{mineStat.CurrentPlayers}/{mineStat.MaximumPlayers}";
         }
 
-        private async Task TrySetChannelNameSafely(DiscordClient discordClient)
+        private async Task<string> TrySetChannelNameSafely(DiscordClient discordClient)
         {
+            string channelName = _configurationConfig.ChannelNameTemplate;
+            
+            channelName = string.Format(channelName, "N/A");
+
             try
             {
-                string channelName = _configurationConfig.ChannelNameTemplate;
-
                 DiscordChannel channel =
                     await discordClient.GetChannelAsync(_configurationConfig.ChannelId);
-
-                channelName = string.Format(channelName, "N/A");
 
                 await channel.ModifyAsync(prop => prop.Name = channelName);
             }
@@ -71,6 +86,8 @@ namespace MinecraftDiscordStatus.BLL.Services
             {
                 Log.Error(ex, "Exception also occured while trying to change the channel name safely");
             }
+
+            return channelName;
         }
     }
 }

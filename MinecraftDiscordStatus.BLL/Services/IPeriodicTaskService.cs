@@ -4,6 +4,6 @@ namespace MinecraftDiscordStatus.BLL.Services
 {
     public interface IPeriodicTaskService
     {
-        Task UpdatePlayerCount(DiscordClient discordClient);
+        Task<string> UpdatePlayerCount(DiscordClient discordClient, string lastChannelName);
     }
 }
