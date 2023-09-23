@@ -21,6 +21,7 @@ namespace MinecraftDiscordStatus.BLL
 
             // Register services
             services.AddScoped<IDiscordBotService, DiscordBotService>();
+            services.AddScoped<IPeriodicTaskService, PeriodicTaskService>();
 
             return services;
         }
