@@ -7,4 +7,29 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="MinecraftDiscordStatus.BLL\**" />
+    <Compile Remove="MinecraftDiscordStatus.Shared\**" />
+    <EmbeddedResource Remove="MinecraftDiscordStatus.BLL\**" />
+    <EmbeddedResource Remove="MinecraftDiscordStatus.Shared\**" />
+    <None Remove="MinecraftDiscordStatus.BLL\**" />
+    <None Remove="MinecraftDiscordStatus.Shared\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="MinecraftDiscordStatus.BLL\MinecraftDiscordStatus.BLL.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
