@@ -16,8 +16,10 @@ namespace MinecraftDiscordStatus.BLL
             services.AddSingleton(configuration);
 
             IConfigurationSection credentialsConfig = configuration.GetSection(ConfigurationSectionName.Credentials);
+            IConfigurationSection configurationConfig = configuration.GetSection(ConfigurationSectionName.Configuration);
 
             services.Configure<CredentialsConfig>(credentialsConfig);
+            services.Configure<ConfigurationConfig>(configurationConfig);
 
             // Register services
             services.AddScoped<IDiscordBotService, DiscordBotService>();

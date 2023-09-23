@@ -13,15 +13,18 @@ namespace MinecraftDiscordStatus.BLL.Services
     public class DiscordBotService : IDiscordBotService
     {
         private IPeriodicTaskService _periodicTaskService;
-        private CredentialsConfig _credentialsConfig;
+        private CredentialsConfig    _credentialsConfig;
+        private ConfigurationConfig  _configurationConfig;
         private static DiscordClient _discordClient;
 
         public DiscordBotService(
             IOptions<CredentialsConfig> credentialConfig,
-            IPeriodicTaskService periodicTaskService)
+            IPeriodicTaskService periodicTaskService,
+            IOptions<ConfigurationConfig> configurationConfig)
         {
-            _credentialsConfig = credentialConfig?.Value;
+            _credentialsConfig   = credentialConfig?.Value;
             _periodicTaskService = periodicTaskService;
+            _configurationConfig = configurationConfig?.Value;
         }
 
         public async Task StartBot(IServiceCollection services)
@@ -40,14 +43,15 @@ namespace MinecraftDiscordStatus.BLL.Services
             await _discordClient.ConnectAsync();
             Log.Information(Messages.Internal_BotStarted);
 
-            var _periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+            var _periodicTimer = 
+                new PeriodicTimer(TimeSpan.FromSeconds(_configurationConfig.RefreshTimeSeconds));
 
             while (await _periodicTimer.WaitForNextTickAsync())
             {
-                Log.Debug("1 second loop");
+                await _periodicTaskService.UpdatePlayerCount(_discordClient);
             }
 
-            await Task.Delay(-1);
+            // await Task.Delay(-1);
         }
 
         #region Private functions

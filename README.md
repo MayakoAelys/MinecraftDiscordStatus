@@ -13,3 +13,7 @@ Scope:
 Bot permissions:
 	- Manage channels
 	- Change nickname
+
+# Minestat dependency
+---------------------
+https://github.com/FragLand/minestat
