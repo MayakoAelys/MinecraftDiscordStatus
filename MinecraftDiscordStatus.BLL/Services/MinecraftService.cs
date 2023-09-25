@@ -2,7 +2,7 @@
 using MinecraftDiscordStatus.Shared.Configuration;
 using MineStatLib;
 
-namespace MinecraftDiscordStatus.BLL
+namespace MinecraftDiscordStatus.BLL.Services
 {
     public class MinecraftService : IMinecraftService
     {

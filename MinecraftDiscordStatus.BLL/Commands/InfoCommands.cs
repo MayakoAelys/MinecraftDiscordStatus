@@ -3,6 +3,7 @@ using System.Text;
 using DSharpPlus.SlashCommands;
 using MineStatLib;
 using DSharpPlus;
+using MinecraftDiscordStatus.BLL.Services;
 
 namespace MinecraftDiscordStatus.BLL.Commands
 {

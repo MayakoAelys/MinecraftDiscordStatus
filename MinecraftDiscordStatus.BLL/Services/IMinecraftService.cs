@@ -1,6 +1,6 @@
 ﻿using MineStatLib;
 
-namespace MinecraftDiscordStatus.BLL
+namespace MinecraftDiscordStatus.BLL.Services
 {
     public interface IMinecraftService
     {
