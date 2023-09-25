@@ -1,12 +1,13 @@
 ﻿using DSharpPlus;
-using DSharpPlus.Entities;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.EventArgs;
+using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using MinecraftDiscordStatus.BLL.Commands;
 using MinecraftDiscordStatus.Shared.Configuration;
 using MinecraftDiscordStatus.Shared.Resources;
 using Serilog;
-using System.Threading;
 
 namespace MinecraftDiscordStatus.BLL.Services
 {
@@ -15,16 +16,20 @@ namespace MinecraftDiscordStatus.BLL.Services
         private IPeriodicTaskService _periodicTaskService;
         private CredentialsConfig    _credentialsConfig;
         private ConfigurationConfig  _configurationConfig;
-        private static DiscordClient _discordClient;
+        private IMinecraftService    _minecraftService;
 
+        private static DiscordClient _discordClient;
+        
         public DiscordBotService(
             IOptions<CredentialsConfig> credentialConfig,
             IPeriodicTaskService periodicTaskService,
-            IOptions<ConfigurationConfig> configurationConfig)
+            IOptions<ConfigurationConfig> configurationConfig,
+            IMinecraftService minecraftService)
         {
             _credentialsConfig   = credentialConfig?.Value;
             _periodicTaskService = periodicTaskService;
             _configurationConfig = configurationConfig?.Value;
+            _minecraftService    = minecraftService;
         }
 
         public async Task StartBot(IServiceCollection services)
@@ -40,10 +45,34 @@ namespace MinecraftDiscordStatus.BLL.Services
             InitEvents(ref _discordClient);
 
             Log.Information(Messages.Internal_ConnectingToDiscord);
+            
             await _discordClient.ConnectAsync();
+            
             Log.Information(Messages.Internal_BotStarted);
 
-            var _periodicTimer = 
+            InitializeCommands();
+
+            await StartPeriodicTimer();
+
+            // await Task.Delay(-1);
+        }
+
+        #region Private functions
+
+        private void InitializeCommands()
+        {
+            SlashCommandsExtension slashCommands =
+                _discordClient.UseSlashCommands(new SlashCommandsConfiguration
+                {
+                    Services = new ServiceCollection().AddSingleton<IMinecraftService>(_minecraftService).BuildServiceProvider()
+                }); 
+
+            slashCommands.RegisterCommands<InfoCommands>(guildId: _configurationConfig.GuildId);
+        }
+
+        private async Task StartPeriodicTimer()
+        {
+            var _periodicTimer =
                 new PeriodicTimer(TimeSpan.FromSeconds(_configurationConfig.RefreshTimeSeconds));
 
             string lastChannelName = string.Empty;
@@ -52,11 +81,7 @@ namespace MinecraftDiscordStatus.BLL.Services
             {
                 lastChannelName = await _periodicTaskService.UpdatePlayerCount(_discordClient, lastChannelName);
             }
-
-            // await Task.Delay(-1);
         }
-
-        #region Private functions
 
         private void InitEvents(ref DiscordClient discordClient)
         {

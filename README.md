@@ -9,10 +9,10 @@ Invite link: https://discord.com/api/oauth2/authorize?client_id=1155156935209926
 
 Scope:
 	- Bot
+	- application.commands (to create slash commands)
 
 Bot permissions:
-	- Manage channels
-	- Change nickname
+	- Manage channels (to update the channel name ofc) 
 
 # Minestat dependency
 ---------------------

@@ -10,10 +10,14 @@ namespace MinecraftDiscordStatus.BLL.Services
     public class PeriodicTaskService : IPeriodicTaskService
     {
         private ConfigurationConfig _configurationConfig;
+        private IMinecraftService _minecraftService;
 
-        public PeriodicTaskService(IOptions<ConfigurationConfig> configurationConfig)
+        public PeriodicTaskService(
+            IOptions<ConfigurationConfig> configurationConfig,
+            IMinecraftService minecraftService)
         {
             _configurationConfig = configurationConfig?.Value;
+            _minecraftService    = minecraftService;
         }
 
         public async Task<string> UpdatePlayerCount(DiscordClient discordClient, string lastChannelName)
@@ -23,7 +27,7 @@ namespace MinecraftDiscordStatus.BLL.Services
             try
             {
                 string channelName = _configurationConfig.ChannelNameTemplate;
-                string onlinePlayers = GetMinecraftOnlinePlayers();
+                string onlinePlayers = _minecraftService.GetMinecraftOnlinePlayers();
 
                 channelName = string.Format(channelName, onlinePlayers);
 
@@ -52,21 +56,6 @@ namespace MinecraftDiscordStatus.BLL.Services
 
                 return channelName;
             }
-        }
-
-        private string GetMinecraftOnlinePlayers()
-        {
-            var mineStat =
-                new MineStat(
-                    _configurationConfig.MinecraftServerIP,
-                    _configurationConfig.MinecraftServerPort,
-                    timeout: 5,
-                    SlpProtocol.Json);
-
-            if (!mineStat.ServerUp)
-                return "Down";
-
-            return $"{mineStat.CurrentPlayers}/{mineStat.MaximumPlayers}";
         }
 
         private async Task<string> TrySetChannelNameSafely(DiscordClient discordClient)
