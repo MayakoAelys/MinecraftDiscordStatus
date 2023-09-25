@@ -1,19 +1,18 @@
 ﻿using DSharpPlus.Entities;
-using System.Text;
 using DSharpPlus.SlashCommands;
-using MineStatLib;
 using DSharpPlus;
 using MinecraftDiscordStatus.BLL.Services;
+using MinecraftDiscordStatus.Shared.Constants;
 
 namespace MinecraftDiscordStatus.BLL.Commands
 {
     public class InfoCommands : ApplicationCommandModule
     {
-        private IMinecraftService _minecraftService;
+        private IButtonService _buttonService;
 
-        public InfoCommands(IMinecraftService minecraftService)
+        public InfoCommands(IButtonService buttonService)
         {
-            _minecraftService = minecraftService;
+            _buttonService = buttonService;
         }
 
         [SlashCommand("onlineplayers", "See who is currently online on the minecraft server")]
@@ -21,59 +20,21 @@ namespace MinecraftDiscordStatus.BLL.Commands
         {
             await interactionContext.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-            MineStat minestat = _minecraftService.GetMinecraftServerInfo();
+            DiscordEmbedBuilder playersOnlineEmbed = 
+                _buttonService.GeneratePlayersOnlineEmbed((DiscordMember) interactionContext.User);
 
-            DiscordEmbedBuilder playersOnlineEmbed = GeneratePlayersOnlineEmbed(minestat);
-            DiscordWebhookBuilder discordWebhookBuilder = new DiscordWebhookBuilder().AddEmbed(playersOnlineEmbed);
+            var discordWebhookBuilder = new DiscordWebhookBuilder();
+            discordWebhookBuilder.AddEmbed(playersOnlineEmbed);
+
+            var updateButton =
+                new DiscordButtonComponent(
+                    ButtonStyle.Primary,
+                    DiscordButtonId.MinecraftUpdatePlayerCount,
+                    "Update");
+
+            discordWebhookBuilder.AddComponents(updateButton);
 
             await interactionContext.EditResponseAsync(discordWebhookBuilder);
-        }
-
-        private DiscordEmbedBuilder GeneratePlayersOnlineEmbed(MineStat minestat)
-        {
-            var embed = new DiscordEmbedBuilder();
-            var stringBuilder = new StringBuilder();
-
-            embed.WithColor(new DiscordColor("#ff0080"));
-
-            // Server stats
-            embed.WithTitle(":earth_africa: Minecraft server stats");
-
-            stringBuilder.AppendLine($"- Online players: {minestat.CurrentPlayers} / {minestat.MaximumPlayers}");
-            stringBuilder.AppendLine($"- Ping: {minestat.Latency}ms");
-
-            embed.AddField(":satellite: General", stringBuilder.ToString());
-            stringBuilder.Clear();
-
-            // Online players
-            if (minestat.PlayerList.Count() == 0)
-            {
-                BuildEmbed(ref embed);
-
-                return embed;
-            }
-
-
-            foreach (string? player in minestat.PlayerList)
-            {
-                if (string.IsNullOrEmpty(player))
-                    continue;
-
-                stringBuilder.AppendLine($"- {player}");
-            }
-            
-            embed.AddField(":eyes: Who is online?", stringBuilder.ToString());
-            stringBuilder.Clear();
-
-            BuildEmbed(ref embed);
-
-            return embed;
-        }
-
-        private void BuildEmbed(ref DiscordEmbedBuilder embed)
-        {
-            embed.WithFooter("🥕 bunbun~");
-            embed.Build();
         }
     }
 }
