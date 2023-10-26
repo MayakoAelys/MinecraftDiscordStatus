@@ -1,14 +1,23 @@
-# BunnyCraft
-Update a channel to show the number of members online on our FC Minecraft server.
+# MinecraftDiscordStatus
+Update a Discord channel to show the number of members online on a Minecraft server.
+
+This update can only happens twice per 10 minutes because of API rate limitations set by Discord.
 
 # Discord
 Scope:
-	- Bot
-	- application.commands (to create slash commands)
 
-Bot permissions:
-	- Manage channels (to update the channel name ofc) 
+- Bot
+- application.commands (to create slash commands)
 
+Bot permissions:  
+
+- Manage channels (to update the channel name ofc) 
+
+# Configure your dev environment
+- Clone the project
+- Rename `appsettings.template.json` to `appsettings.json`
+- Complete the configuration file by adding your discord bot token, minecraft ip server, etc
+- Build and launch
 
 # Deploy
 ## Linux
